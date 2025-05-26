@@ -1,0 +1,18 @@
+{
+  "frame": {
+    "version": "1",
+    "name": "Dynamic Mini App",
+    "iconUrl": "https://utah-kits-adaptor-lee.trycloudflare.com/image-light.png",
+    "homeUrl": "https://utah-kits-adaptor-lee.trycloudflare.com",
+    "splashImageUrl": "https://utah-kits-adaptor-lee.trycloudflare.com/image-light.png",
+    "splashBackgroundColor": "#000000",
+    "subtitle": "Connect with Dynamic",
+    "description": "A mini app that demonstrates wallet connections and transactions with Dynamic and Wagmi",
+    "primaryCategory": "finance",
+    "tags": ["wallet", "connect", "ethereum", "dynamic"],
+    "ogTitle": "Dynamic Mini App",
+    "ogDescription": "Connect wallets and perform transactions with Dynamic",
+    "ogImageUrl": "https://utah-kits-adaptor-lee.trycloudflare.com/logo-light.png",
+    "tagline": "Easy wallet connections & transactions"
+  }
+}
