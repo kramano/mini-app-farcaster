@@ -1,4 +1,3 @@
-import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import {
   useDynamicContext,
   useIsLoggedIn,
@@ -13,8 +12,6 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import { useEffect, useState } from "react";
-import { parseEther } from "viem";
-import { useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import "./Methods.css";
 
 export default function DynamicMethods() {
@@ -26,20 +23,15 @@ export default function DynamicMethods() {
   const [error, setError] = useState<string | null>(null);
   const [recipientAddress, setRecipientAddress] = useState<string>("");
   const [amount, setAmount] = useState<string>("0.01");
-  const { sendTransaction } = useSendTransaction();
-  const { data: receiptData } = useWaitForTransactionReceipt();
 
-  const isEthereum = primaryWallet && isEthereumWallet(primaryWallet);
   const isSolana = primaryWallet && isSolanaWallet(primaryWallet);
 
-  // Initialize recipient address with appropriate prefix based on wallet type
+  // Initialize recipient address
   useEffect(() => {
-    if (isEthereum) {
-      setRecipientAddress("0x");
-    } else if (isSolana) {
+    if (isSolana) {
       setRecipientAddress("");
     }
-  }, [isEthereum, isSolana]);
+  }, [isSolana]);
 
   const safeStringify = (obj: unknown): string => {
     const seen = new WeakSet();
@@ -93,104 +85,6 @@ export default function DynamicMethods() {
     }
   }
 
-  async function fetchEthereumPublicClient() {
-    if (!isEthereum) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      const result = await primaryWallet.getPublicClient();
-      setResult(safeStringify(result));
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Unknown error occurred"
-      );
-      setResult(undefined);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function fetchEthereumWalletClient() {
-    if (!isEthereum) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      const result = await primaryWallet.getWalletClient();
-      setResult(safeStringify(result));
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Unknown error occurred"
-      );
-      setResult(undefined);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function signEthereumMessage() {
-    if (!isEthereum) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      const result = await primaryWallet.signMessage("Hello World");
-      setResult(result);
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Unknown error occurred"
-      );
-      setResult(undefined);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function handleEthereumTransaction() {
-    if (!isEthereum) return;
-
-    if (
-      recipientAddress === "0x0000000000000000000000000000000000000000" ||
-      !recipientAddress.startsWith("0x")
-    ) {
-      setError("Please enter a valid Ethereum recipient address");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      setResult("Sending transaction...");
-
-      sendTransaction(
-        {
-          to: recipientAddress as `0x${string}`,
-          value: parseEther(amount),
-        },
-        {
-          onSuccess: (data) => {
-            setResult(`Transaction submitted: ${data}`);
-          },
-          onError: (error) => {
-            setError(`${error.message}`);
-          },
-        }
-      );
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Unknown error occurred"
-      );
-      setResult(undefined);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    if (receiptData) {
-      setResult(
-        `Transaction confirmed! Block number: ${receiptData.blockNumber}`
-      );
-    }
-  }, [receiptData]);
 
   async function fetchSolanaConnection() {
     if (!isSolana) return;
@@ -319,32 +213,6 @@ export default function DynamicMethods() {
               Fetch User Wallets
             </button>
 
-            {isEthereum && (
-              <>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={fetchEthereumPublicClient}
-                >
-                  Fetch PublicClient
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={fetchEthereumWalletClient}
-                >
-                  Fetch WalletClient
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={signEthereumMessage}
-                >
-                  Sign Message
-                </button>
-              </>
-            )}
-
             {isSolana && (
               <>
                 <button
@@ -372,9 +240,9 @@ export default function DynamicMethods() {
             )}
           </div>
 
-          {primaryWallet && (
+          {primaryWallet && isSolana && (
             <div className="recipient-container">
-              <h3>Send {isEthereum ? "Ethereum" : "Solana"} Transaction</h3>
+              <h3>Send Solana Transaction</h3>
               <div className="transaction-form">
                 <div className="form-group">
                   <label htmlFor="recipient-address">Recipient Address</label>
@@ -383,11 +251,7 @@ export default function DynamicMethods() {
                     type="text"
                     value={recipientAddress}
                     onChange={(e) => setRecipientAddress(e.target.value)}
-                    placeholder={
-                      isEthereum
-                        ? "Enter 0x... address"
-                        : "Enter SOL address..."
-                    }
+                    placeholder="Enter SOL address..."
                     className="address-input"
                   />
                 </div>
@@ -402,21 +266,15 @@ export default function DynamicMethods() {
                       placeholder="0.01"
                       className="amount-input"
                     />
-                    <span className="currency-label">
-                      {isEthereum ? "ETH" : "SOL"}
-                    </span>
+                    <span className="currency-label">SOL</span>
                   </div>
                 </div>
                 <button
                   type="button"
                   className="send-btn"
-                  onClick={
-                    isEthereum
-                      ? handleEthereumTransaction
-                      : handleSolanaTransaction
-                  }
+                  onClick={handleSolanaTransaction}
                 >
-                  Send {isEthereum ? "ETH" : "SOL"}
+                  Send SOL
                 </button>
               </div>
             </div>
