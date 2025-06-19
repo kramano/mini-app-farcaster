@@ -7,6 +7,7 @@ import sdk from "@farcaster/frame-sdk";
 import {useEffect} from "react";
 import ConnectMenu from "@/components/ConnectMenu";
 import Layout from "@/components/Layout";
+import WalletErrorBoundary from "@/components/WalletErrorBoundary";
 import Wallet from "@/Wallet.tsx";
 
 function App() {
@@ -60,10 +61,12 @@ function App() {
 
             }}
         >
-            <Layout>
-                <ConnectMenu/>
-                <Wallet/>
-            </Layout>
+            <WalletErrorBoundary>
+                <Layout>
+                    <ConnectMenu/>
+                    <Wallet/>
+                </Layout>
+            </WalletErrorBoundary>
         </DynamicContextProvider>
     );
 }
