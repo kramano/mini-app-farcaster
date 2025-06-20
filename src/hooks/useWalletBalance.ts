@@ -9,7 +9,7 @@ const USDC_DECIMALS = 6;
 export const useWalletBalance = (usdcMintAddress?: string) => {
   const { primaryWallet } = useDynamicContext();
   const [balance, setBalance] = useState<string>("0.00");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
   
   const isSolana = primaryWallet && isSolanaWallet(primaryWallet);
@@ -17,6 +17,7 @@ export const useWalletBalance = (usdcMintAddress?: string) => {
   const fetchBalance = useCallback(async () => {
     if (!isSolana || !usdcMintAddress || !primaryWallet) {
       setBalance("0.00");
+      setIsLoading(false);
       return;
     }
 

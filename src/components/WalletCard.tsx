@@ -9,10 +9,10 @@ interface WalletCardProps {
 }
 
 const WalletCard = ({ onAction, usdcBalance }: WalletCardProps) => {
-  // Format the balance with dollar sign and 2 decimal places
+  // Format the balance with 2 decimal places
   const formattedBalance = usdcBalance !== undefined 
     ? usdcBalance
-    : "$0.00";
+    : 0.00;
   const isEarning = true;
   const currentEarning = "+$0.027";
   const apy = "5.5%";

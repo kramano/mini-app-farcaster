@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Mail, DollarSign, AlertCircle } from "lucide-react";
+import { Loader2, Mail, DollarSign, AlertCircle, CheckCircle, User } from "lucide-react";
 import { useSendUsdc } from "@/hooks/useSendUsdc";
 
 interface SendModalProps {
@@ -17,6 +17,7 @@ const SendModal = ({ onClose, balance, usdcMintAddress, onTransactionSuccess }: 
     const [email, setEmail] = useState("");
     const [amount, setAmount] = useState("");
     const [errors, setErrors] = useState<{ email?: string; amount?: string }>({});
+    const [step, setStep] = useState<'input' | 'confirm'>('input');
 
     // Hook handles all the business logic
     const { sendUsdc, isLoading, error, clearError } = useSendUsdc({
@@ -76,10 +77,16 @@ const SendModal = ({ onClose, balance, usdcMintAddress, onTransactionSuccess }: 
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length === 0) {
-            try {
-                await sendUsdc(email, amount);
-            } catch (error) {
-                console.error("Send failed:", error);
+            if (step === 'input') {
+                // Move to confirmation step
+                setStep('confirm');
+            } else {
+                // Execute transaction
+                try {
+                    await sendUsdc(email, amount);
+                } catch (error) {
+                    console.error("Send failed:", error);
+                }
             }
         }
     };
@@ -116,10 +123,98 @@ const SendModal = ({ onClose, balance, usdcMintAddress, onTransactionSuccess }: 
         }
     };
 
+
     const setMaxAmount = () => {
         setAmount(balance);
     };
 
+    const handleBack = () => {
+        setStep('input');
+    };
+
+    // Render confirmation step
+    if (step === 'confirm') {
+        return (
+            <div className="space-y-6">
+                {/* Hook-level error display */}
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription className="text-sm">
+                            {error}
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                {/* Confirmation Header */}
+                <div className="text-center">
+                    <h3 className="text-lg font-semibold text-gray-900">Confirm Transaction</h3>
+                    <p className="text-sm text-gray-600 mt-1">Please review the details before sending</p>
+                </div>
+
+                {/* Recipient Information */}
+                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                    <div className="flex items-start space-x-3">
+                        <div className="bg-blue-100 rounded-full p-2">
+                            <User className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                                <span className="font-medium text-gray-900">
+                                    {email}
+                                </span>
+                            </div>
+                            <p className="text-sm text-gray-600">Recipient</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Transaction Details */}
+                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                    <h4 className="font-medium text-gray-900">Transaction Details</h4>
+                    <div className="space-y-2 text-sm">
+                        <div className="flex justify-between font-medium">
+                            <span>Amount:</span>
+                            <span>{amount} USDC</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleBack}
+                        className="flex-1 h-12"
+                        disabled={isLoading}
+                    >
+                        Back
+                    </Button>
+                    <Button
+                        type="button"
+                        onClick={handleSubmit}
+                        className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                Sending...
+                            </>
+                        ) : (
+                            <>
+                                <DollarSign className="h-4 w-4 mr-2" />
+                                Send USDC
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // Render input step
     return (
         <div className="space-y-6">
             {/* Hook-level error display */}
@@ -233,8 +328,8 @@ const SendModal = ({ onClose, balance, usdcMintAddress, onTransactionSuccess }: 
                         </>
                     ) : (
                         <>
-                            <DollarSign className="h-4 w-4 mr-2" />
-                            Send USDC
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Continue
                         </>
                     )}
                 </Button>

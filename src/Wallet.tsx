@@ -24,12 +24,12 @@ const Wallet = () => {
 
     // Custom hooks
     const { validationError, clearValidationError } = useWalletValidation();
-    const { balance: usdcBalance, refetch: refetchBalance } = useWalletBalance(ENV_CONFIG.usdcMintAddress);
+    const { balance: usdcBalance, isLoading: isLoadingBalance, refetch: refetchBalance } = useWalletBalance(ENV_CONFIG.usdcMintAddress);
     const { activeModal, openModal, closeModal } = useModalState();
     const { handleTopUp, result, error, clearResults, hasResults } = useFundingActions();
     
     // Loading state (registration now handled via Dynamic events in App.tsx)
-    const isComponentLoading = !sdkHasLoaded || !isLoggedIn || !primaryWallet;
+    const isComponentLoading = !sdkHasLoaded || !isLoggedIn || !primaryWallet || isLoadingBalance;
 
     // Handle wallet actions
     const handleAction = useCallback((action: WalletAction) => {

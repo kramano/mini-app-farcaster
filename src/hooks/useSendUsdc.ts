@@ -6,6 +6,7 @@ import {isSolanaWallet} from '@dynamic-labs/solana';
 import {useToast} from '@/hooks/use-toast';
 import EmailResolver from '@/services/emailResolver';
 import GaslessTransactionService from '@/services/gaslessTransactionService';
+import TransferIntentService from '@/services/transferIntentService';
 
 export interface UseSendUsdcOptions {
     usdcMintAddress?: string;
@@ -24,7 +25,7 @@ export interface UseSendUsdcReturn {
 }
 
 export const useSendUsdc = (options: UseSendUsdcOptions = {}): UseSendUsdcReturn => {
-    const {primaryWallet} = useDynamicContext();
+    const {primaryWallet, user} = useDynamicContext();
     const {toast} = useToast();
 
     const {
@@ -61,58 +62,63 @@ export const useSendUsdc = (options: UseSendUsdcOptions = {}): UseSendUsdcReturn
         setTransactionSignature(null);
 
         try {
-            // Step 1: Show resolving toast
-            toast({
-                title: "Resolving recipient...",
-                description: `Looking up wallet for ${email}`,
-            });
-
-            console.log('📧 Resolving email to wallet address...');
-            // Resolve email to wallet address
-            const resolvedAddress = await EmailResolver.resolveEmailToAddress(email);
-
-            if (!resolvedAddress) {
-                throw new Error(`No wallet found for email: ${email}`);
-            }
-
-            console.log('✅ Email resolved to:', resolvedAddress);
-
             // Convert amount to lamports (USDC has 6 decimals)
             const amountInLamports = Math.round(parseFloat(amount) * 1_000_000);
 
-            console.log('💸 Sending USDC amount:', amountInLamports, 'base units');
+            console.log('💸 Processing USDC amount:', amountInLamports, 'base units');
 
-            // Step 2: Show preparing toast
+            // Step 1: Try to resolve email to wallet address
             toast({
-                title: "Preparing transaction...",
-                description: "Setting up USDC transfer",
+                title: "Processing transaction...",
+                description: `Sending ${amount} USDC to ${email}`,
             });
 
-            // Create gasless transaction
-            console.log('🎯 Creating gasless transaction...');
-            const gaslessTransaction = await GaslessTransactionService.createGaslessTransaction({
-                senderAddress: primaryWallet.address,
-                recipientAddress: resolvedAddress,
-                amount: amountInLamports,
-            });
+            console.log('📧 Resolving email to wallet address...');
+            const resolvedAddress = await EmailResolver.resolveEmailToAddress(email);
 
-            // Step 3: Get signer
-            const signer = await primaryWallet.getSigner();
+            if (resolvedAddress) {
+                // Direct transfer flow - recipient is registered
+                console.log('✅ Email resolved to:', resolvedAddress);
+                console.log('🎯 Creating direct transfer...');
 
-            console.log('✍️ User signing gasless transaction...');
-            // User signs the gasless transaction (fee payer already signed)
-            const { signature } = await signer.signAndSendTransaction(gaslessTransaction);
+                // Create gasless transaction
+                const gaslessTransaction = await GaslessTransactionService.createGaslessTransaction({
+                    senderAddress: primaryWallet.address,
+                    recipientAddress: resolvedAddress,
+                    amount: amountInLamports,
+                });
 
-            console.log('✅ Gasless transaction successful:', signature);
-            setTransactionSignature(signature);
+                // Get signer and execute transaction
+                const signer = await primaryWallet.getSigner();
+                console.log('✍️ User signing gasless transaction...');
+                const { signature } = await signer.signAndSendTransaction(gaslessTransaction);
 
+                console.log('✅ Direct transfer successful:', signature);
+                setTransactionSignature(signature);
+            } else {
+                // Transfer intent flow - recipient is not registered
+                // Only create database record, NO transaction sent
+                console.log('📝 Recipient not registered, creating transfer intent (no transaction sent)...');
+
+                const transferIntent = await TransferIntentService.createTransferIntent({
+                    senderWalletAddress: primaryWallet.address,
+                    senderEmail: user?.email || undefined,
+                    recipientEmail: email,
+                    amount: amountInLamports,
+                });
+
+                console.log('✅ Transfer intent created (no funds transferred yet):', transferIntent.id);
+                setTransactionSignature(transferIntent.id); // Use intent ID as signature for tracking
+            }
+
+            // Same success message regardless of flow
             toast({
                 title: "Transaction Successful! 🎉",
                 description: `Sent ${amount} USDC to ${email}`,
             });
 
             // Call success callback
-            onSuccess?.(signature);
+            onSuccess?.(transactionSignature || 'intent-created');
 
         } catch (err) {
             console.error('❌ Gasless transaction failed:', err);
