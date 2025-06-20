@@ -21,8 +21,8 @@ const SendModal = ({ onClose, balance, usdcMintAddress, onTransactionSuccess }: 
     // Hook handles all the business logic
     const { sendUsdc, isLoading, error, clearError } = useSendUsdc({
         usdcMintAddress,
-        onSuccess: (result) => {
-            console.log('USDC sent successfully:', result);
+        onSuccess: (signature) => {
+            console.log('USDC sent successfully:', signature);
             onTransactionSuccess?.();
             onClose();
         },
@@ -205,26 +205,9 @@ const SendModal = ({ onClose, balance, usdcMintAddress, onTransactionSuccess }: 
                             <span className="text-gray-600">Amount:</span>
                             <span className="font-medium">{amount} USDC</span>
                         </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-600">Network fee:</span>
-                            <span className="font-medium">~$0.001</span>
-                        </div>
-                        <div className="border-t border-gray-200 pt-2 flex justify-between font-medium">
-                            <span>Total:</span>
-                            <span>{amount} USDC + fees</span>
-                        </div>
                     </div>
                 </div>
             )}
-
-            {/* Info Alert */}
-            <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-sm">
-                    If the recipient doesn't have a USDC account, we'll create one for them automatically.
-                    The transaction will be sent on Solana Devnet.
-                </AlertDescription>
-            </Alert>
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">

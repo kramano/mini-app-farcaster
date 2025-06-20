@@ -4,23 +4,21 @@ import {useState, useCallback} from 'react';
 import {useDynamicContext} from '@dynamic-labs/sdk-react-core';
 import {isSolanaWallet} from '@dynamic-labs/solana';
 import {useToast} from '@/hooks/use-toast';
-import UsdcTransaction, {
-    UsdcTransactionError,
-    SendUsdcResult
-} from '@/services/usdcTransaction';
+import EmailResolver from '@/services/emailResolver';
+import GaslessTransactionService from '@/services/gaslessTransactionService';
 
 export interface UseSendUsdcOptions {
     usdcMintAddress?: string;
     rpcUrl?: string;
-    onSuccess?: (result: SendUsdcResult) => void;
-    onError?: (error: UsdcTransactionError) => void;
+    onSuccess?: (signature: string) => void;
+    onError?: (error: string) => void;
 }
 
 export interface UseSendUsdcReturn {
     sendUsdc: (email: string, amount: string) => Promise<void>;
     isLoading: boolean;
     error: string | null;
-    lastResult: SendUsdcResult | null;
+    transactionSignature: string | null;
     clearError: () => void;
     isReady: boolean;
 }
@@ -39,7 +37,7 @@ export const useSendUsdc = (options: UseSendUsdcOptions = {}): UseSendUsdcReturn
     // State
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [lastResult, setLastResult] = useState<SendUsdcResult | null>(null);
+    const [transactionSignature, setTransactionSignature] = useState<string | null>(null);
 
     // Check if we're ready to send
     const isSolana = primaryWallet && isSolanaWallet(primaryWallet);
@@ -60,6 +58,7 @@ export const useSendUsdc = (options: UseSendUsdcOptions = {}): UseSendUsdcReturn
 
         setIsLoading(true);
         setError(null);
+        setTransactionSignature(null);
 
         try {
             // Step 1: Show resolving toast
@@ -68,81 +67,65 @@ export const useSendUsdc = (options: UseSendUsdcOptions = {}): UseSendUsdcReturn
                 description: `Looking up wallet for ${email}`,
             });
 
-            // Step 2: Get signer
-            const signer = await primaryWallet.getSigner();
+            console.log('📧 Resolving email to wallet address...');
+            // Resolve email to wallet address
+            const resolvedAddress = await EmailResolver.resolveEmailToAddress(email);
 
-            // Step 3: Execute transaction via service
+            if (!resolvedAddress) {
+                throw new Error(`No wallet found for email: ${email}`);
+            }
+
+            console.log('✅ Email resolved to:', resolvedAddress);
+
+            // Convert amount to lamports (USDC has 6 decimals)
+            const amountInLamports = Math.round(parseFloat(amount) * 1_000_000);
+
+            console.log('💸 Sending USDC amount:', amountInLamports, 'base units');
+
+            // Step 2: Show preparing toast
             toast({
                 title: "Preparing transaction...",
                 description: "Setting up USDC transfer",
             });
 
-            const result = await UsdcTransaction.sendToEmail({
+            // Create gasless transaction
+            console.log('🎯 Creating gasless transaction...');
+            const gaslessTransaction = await GaslessTransactionService.createGaslessTransaction({
                 senderAddress: primaryWallet.address,
-                email,
-                amount,
-                usdcMintAddress: usdcMintAddress!,
-                rpcUrl,
-                signer
+                recipientAddress: resolvedAddress,
+                amount: amountInLamports,
             });
 
-            // Step 4: Success handling
-            setLastResult(result);
+            // Step 3: Get signer
+            const signer = await primaryWallet.getSigner();
 
-            const recipientName = result.recipientInfo?.name || email;
-            const successMessage = `Sent ${amount} USDC to ${recipientName}`;
+            console.log('✍️ User signing gasless transaction...');
+            // User signs the gasless transaction (fee payer already signed)
+            const { signature } = await signer.signAndSendTransaction(gaslessTransaction);
+
+            console.log('✅ Gasless transaction successful:', signature);
+            setTransactionSignature(signature);
 
             toast({
                 title: "Transaction Successful! 🎉",
-                description: successMessage,
+                description: `Sent ${amount} USDC to ${email}`,
             });
 
             // Call success callback
-            onSuccess?.(result);
+            onSuccess?.(signature);
 
         } catch (err) {
-            console.error('useSendUsdc: Transaction failed:', err);
-
-            let errorTitle = "Transaction Failed";
-            let errorDescription = "Please try again";
-
-            if (err instanceof UsdcTransactionError) {
-                switch (err.code) {
-                    case 'EMAIL_NOT_FOUND':
-                        errorTitle = "Recipient Not Found";
-                        errorDescription = err.message;
-                        break;
-                    case 'INVALID_AMOUNT':
-                        errorTitle = "Invalid Amount";
-                        errorDescription = err.message;
-                        break;
-                    case 'INSUFFICIENT_BALANCE':
-                        errorTitle = "Insufficient Balance";
-                        errorDescription = err.message;
-                        break;
-                    case 'TRANSACTION_FAILED':
-                        errorTitle = "Transaction Failed";
-                        errorDescription = err.message;
-                        break;
-                    default:
-                        errorDescription = err.message;
-                }
-            } else if (err instanceof Error) {
-                errorDescription = err.message;
-            }
-
-            setError(errorDescription);
+            console.error('❌ Gasless transaction failed:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Transaction failed';
+            setError(errorMessage);
 
             toast({
-                title: errorTitle,
-                description: errorDescription,
+                title: "Transaction Failed",
+                description: errorMessage,
                 variant: "destructive",
             });
 
-            // Call error callback
-            if (err instanceof UsdcTransactionError) {
-                onError?.(err);
-            }
+            onError?.(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -164,7 +147,7 @@ export const useSendUsdc = (options: UseSendUsdcOptions = {}): UseSendUsdcReturn
         sendUsdc,
         isLoading,
         error,
-        lastResult,
+        transactionSignature,
         clearError,
         isReady
     };
