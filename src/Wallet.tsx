@@ -6,11 +6,9 @@ import WalletError from "@/components/WalletError";
 import WalletResults from "@/components/WalletResults";
 import ModalContainer from "@/components/ModalContainer";
 import DemoInfo from "@/components/DemoInfo";
-import { ChainEnum } from "@dynamic-labs/sdk-api";
 import {
     useDynamicContext,
-    useIsLoggedIn,
-    useTokenBalances
+    useIsLoggedIn
 } from "@dynamic-labs/sdk-react-core";
 import { useWalletBalance } from "@/hooks/useWalletBalance";
 import { useWalletValidation } from "@/hooks/useWalletValidation";
@@ -29,16 +27,9 @@ const Wallet = () => {
     const { balance: usdcBalance, refetch: refetchBalance } = useWalletBalance(ENV_CONFIG.usdcMintAddress);
     const { activeModal, openModal, closeModal } = useModalState();
     const { handleTopUp, result, error, clearResults, hasResults } = useFundingActions();
-
-    // Token balances from Dynamic SDK
-    const { isLoading: tokenBalancesLoading } = useTokenBalances({
-        chainName: ChainEnum.Sol,
-        includeFiat: true,
-        includeNativeBalance: true,
-    });
-
-    // Combined loading state
-    const isComponentLoading = !sdkHasLoaded || !isLoggedIn || !primaryWallet || tokenBalancesLoading;
+    
+    // Loading state (registration now handled via Dynamic events in App.tsx)
+    const isComponentLoading = !sdkHasLoaded || !isLoggedIn || !primaryWallet;
 
     // Handle wallet actions
     const handleAction = useCallback((action: WalletAction) => {
@@ -62,8 +53,7 @@ const Wallet = () => {
                 loadingState={{
                     sdkHasLoaded,
                     isLoggedIn,
-                    hasPrimaryWallet: !!primaryWallet,
-                    tokenBalancesLoading
+                    hasPrimaryWallet: !!primaryWallet
                 }}
             />
         );

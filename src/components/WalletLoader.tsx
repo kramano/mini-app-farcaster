@@ -4,7 +4,6 @@ interface LoadingState {
   sdkHasLoaded: boolean;
   isLoggedIn: boolean;
   hasPrimaryWallet: boolean;
-  tokenBalancesLoading: boolean;
 }
 
 interface WalletLoaderProps {
@@ -12,13 +11,12 @@ interface WalletLoaderProps {
 }
 
 const WalletLoader = ({ loadingState }: WalletLoaderProps) => {
-  const { sdkHasLoaded, isLoggedIn, hasPrimaryWallet, tokenBalancesLoading } = loadingState;
+  const { sdkHasLoaded, isLoggedIn, hasPrimaryWallet } = loadingState;
 
   const getLoadingMessage = () => {
     if (!sdkHasLoaded) return LOADING_MESSAGES.SDK_INITIALIZING;
     if (!isLoggedIn) return LOADING_MESSAGES.LOGIN_REQUIRED;
     if (!hasPrimaryWallet) return LOADING_MESSAGES.WALLET_CONNECTION_REQUIRED;
-    if (tokenBalancesLoading) return LOADING_MESSAGES.TOKEN_BALANCES_LOADING;
     return LOADING_MESSAGES.SDK_INITIALIZING;
   };
 

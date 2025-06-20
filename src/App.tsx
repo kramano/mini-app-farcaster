@@ -5,6 +5,7 @@ import {
 import {SolanaWalletConnectors} from "@dynamic-labs/solana";
 import sdk from "@farcaster/frame-sdk";
 import {useEffect} from "react";
+import { handleAuthSuccess } from "@/services/registrationHandler";
 import ConnectMenu from "@/components/ConnectMenu";
 import Layout from "@/components/Layout";
 import WalletErrorBoundary from "@/components/WalletErrorBoundary";
@@ -22,6 +23,8 @@ function App() {
 
         setupFarcaster();
     }, []);
+
+
 
     const cssOverrides = `
   /* Change modal border radius, width, and overlay */
@@ -58,7 +61,9 @@ function App() {
                 environmentId: import.meta.env.VITE_DYNAMIC_ENVIRONMENT_ID,
                 walletConnectors: [SolanaWalletConnectors],
                 cssOverrides,
-
+                events: {
+                    onAuthSuccess: handleAuthSuccess,
+                },
             }}
         >
             <WalletErrorBoundary>

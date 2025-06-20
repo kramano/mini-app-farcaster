@@ -15,7 +15,6 @@ export const LOADING_MESSAGES = {
   SDK_INITIALIZING: "Initializing SDK...",
   LOGIN_REQUIRED: "Please log in to continue",
   WALLET_CONNECTION_REQUIRED: "Please connect a wallet",
-  TOKEN_BALANCES_LOADING: "Loading token balances...",
 } as const;
 
 export const ERROR_MESSAGES = {
