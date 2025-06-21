@@ -3,6 +3,7 @@ export const WALLET_ACTIONS = {
   RECEIVE: "receive", 
   EARN: "earn",
   TOPUP: "topup",
+  SETTINGS: "settings",
 } as const;
 
 export type WalletAction = typeof WALLET_ACTIONS[keyof typeof WALLET_ACTIONS];
@@ -14,7 +15,7 @@ export const DEFAULT_BALANCE = "0.00";
 export const LOADING_MESSAGES = {
   SDK_INITIALIZING: "Initializing SDK...",
   LOGIN_REQUIRED: "Please log in to continue",
-  WALLET_CONNECTION_REQUIRED: "Please connect a wallet",
+  WALLET_CONNECTION_REQUIRED: "Connecting wallet...",
 } as const;
 
 export const ERROR_MESSAGES = {

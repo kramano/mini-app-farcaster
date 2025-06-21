@@ -5,7 +5,6 @@ import WalletLoader from "@/components/WalletLoader";
 import WalletError from "@/components/WalletError";
 import WalletResults from "@/components/WalletResults";
 import ModalContainer from "@/components/ModalContainer";
-import DemoInfo from "@/components/DemoInfo";
 import {
     useDynamicContext,
     useIsLoggedIn
@@ -61,14 +60,12 @@ const Wallet = () => {
 
     return (
         <>
-            <div className="min-h-screen bg-gray-50 p-4 flex flex-col items-center justify-center">
+            <div className="min-h-screen p-4 flex flex-col items-center justify-center">
                 <div className="space-y-4">
                     <WalletCard
                         onAction={handleAction}
                         usdcBalance={parseFloat(usdcBalance)}
                     />
-
-                    <DemoInfo />
 
                     {validationError && (
                         <WalletError

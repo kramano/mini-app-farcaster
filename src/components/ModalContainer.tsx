@@ -3,6 +3,7 @@ import Modal from './Modal';
 import SendModal from './SendModal';
 import ReceiveModal from './ReceiveModal';
 import EarnModal from './EarnModal';
+import SettingsModal from './SettingsModal';
 import { ModalType } from '@/hooks/useModalState';
 
 interface ModalContainerProps {
@@ -45,6 +46,11 @@ const ModalContainer = ({
             {/* Earn Modal */}
             <Modal isOpen={activeModal === "earn"} onClose={onClose} title="Start Earning">
                 <EarnModal onClose={onClose} />
+            </Modal>
+
+            {/* Settings Modal */}
+            <Modal isOpen={activeModal === "settings"} onClose={onClose} title="Settings">
+                <SettingsModal onClose={onClose} />
             </Modal>
         </>
     );

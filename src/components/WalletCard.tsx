@@ -1,6 +1,4 @@
 
-import { Button } from "@/components/ui/button";
-
 import { WalletAction } from "@/constants/wallet";
 
 interface WalletCardProps {
@@ -8,71 +6,127 @@ interface WalletCardProps {
   usdcBalance?: number;
 }
 
-const WalletCard = ({ onAction, usdcBalance }: WalletCardProps) => {
-  // Format the balance with 2 decimal places
-  const formattedBalance = usdcBalance !== undefined 
-    ? usdcBalance
-    : 0.00;
+const WalletCard = ({ onAction, usdcBalance = 97.00 }: WalletCardProps) => {
   const isEarning = true;
   const currentEarning = "+$0.027";
   const apy = "5.5%";
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-3xl shadow-xl p-8 space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            💳 USDC Yield Wallet
-          </h1>
-        </div>
+    <div className="fy-wallet-card glass-container" style={{ position: 'relative' }}>
+      {/* Settings Button */}
+      <button
+        onClick={() => onAction("settings")}
+        style={{
+          position: 'absolute',
+          top: '16px',
+          right: '16px',
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid var(--border-light)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+          zIndex: 10
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+          e.currentTarget.style.transform = 'translateY(-1px)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
+          e.currentTarget.style.transform = 'translateY(0)';
+        }}
+      >
+        <svg 
+          style={{ width: '20px', height: '20px', color: 'var(--text-secondary)' }} 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" 
+          />
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
+          />
+        </svg>
+      </button>
 
-        {/* Balance Display */}
-        <div className="text-center space-y-2">
-          <div className="text-4xl font-bold text-gray-900">
-            {formattedBalance} <span className="text-2xl text-gray-600">USDC</span>
+      {/* FY Money Header */}
+      <div className="fy-header">
+        <div className="fy-logo">FY</div>
+        <div className="fy-brand-info">
+          <h1 className="fy-brand-name">FY Money</h1>
+          <p className="fy-brand-tagline">Your USDC Yield Wallet</p>
+        </div>
+      </div>
+
+      {/* Enhanced Balance Display */}
+      <div className="fy-balance-section">
+        <p className="fy-balance-label">Total Balance</p>
+        <div className="fy-balance-amount">
+          ${usdcBalance.toFixed(2)} <span className="fy-balance-currency">USDC</span>
+        </div>
+        {isEarning && (
+          <div className="fy-earning-status">
+            <div className="fy-earning-dot"></div>
+            <span className="fy-earning-text">Earning {currentEarning} ({apy} APY)</span>
           </div>
-          {isEarning && (
-            <div className="text-sm text-green-600 font-medium">
-              Currently Earning: {currentEarning} ({apy} APY)
-            </div>
-          )}
-        </div>
+        )}
+      </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button
-            onClick={() => onAction("send")}
-            className="w-full h-14 text-lg font-semibold rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            ➤ Send USDC
-          </Button>
+      {/* Action Buttons */}
+      <div className="fy-space-y-4">
+        <button
+          onClick={() => onAction("send")}
+          className="fy-action-button fy-send-btn"
+        >
+          <span className="fy-button-icon">→</span>
+          Send USDC
+        </button>
 
-          <Button
-            onClick={() => onAction("receive")}
-            className="w-full h-14 text-lg font-semibold rounded-2xl bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            ⇩ Receive USDC
-          </Button>
+        <button
+          onClick={() => onAction("receive")}
+          className="fy-action-button fy-receive-btn"
+        >
+          <span className="fy-button-icon">↓</span>
+          Receive USDC
+        </button>
 
-          <Button
-            onClick={() => {
-              onAction("earn");
-            }}
-            className="w-full h-14 text-lg font-semibold rounded-2xl bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            📈 Start Earning
-          </Button>
+        <button
+          onClick={() => onAction("earn")}
+          className="fy-action-button fy-earn-btn"
+        >
+          <span className="fy-button-icon">⚡</span>
+          Start Earning
+        </button>
 
-          <Button
-              onClick={() => {
-                onAction("topup");
-              }}
-              className="w-full h-14 text-lg font-semibold rounded-2xl bg-orange-600 hover:bg-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            💰 Top Up
-          </Button>
-        </div>
+        <button
+          onClick={() => onAction("topup")}
+          className="fy-action-button fy-topup-btn"
+        >
+          <span className="fy-button-icon">+</span>
+          Top Up
+        </button>
+      </div>
+
+      {/* Footer */}
+      <div className="fy-footer">
+        <p className="fy-footer-text">
+          Powered by Solana • fymoney.xyz
+        </p>
       </div>
     </div>
   );

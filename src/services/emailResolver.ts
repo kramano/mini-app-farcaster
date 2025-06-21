@@ -9,39 +9,9 @@ export interface AddressMapping {
     verified: boolean;
 }
 
-// Fallback demo mappings for development/testing when Supabase is not available
-const FALLBACK_EMAIL_TO_ADDRESS_MAP: AddressMapping[] = [
-    {
-        email: "alice@example.com",
-        address: "GVzuPLLgfNE5FrCKuHnWqghFWYvqFWo6BrW8X5m1Q6Tc",
-        name: "Alice Smith",
-        verified: true
-    },
-    {
-        email: "bob@example.com",
-        address: "DaVDxpJ2KFQRB8PQZHuX4YF8jWdgXYtKmZoQT9HbGbJG",
-        name: "Bob Johnson",
-        verified: true
-    },
-    {
-        email: "charlie@example.com",
-        address: "8W6R2Nz3FjJQJ6YQgGJkKxQ5uMp9NvCx3LrEbHtPqC8D",
-        name: "Charlie Brown",
-        verified: true
-    },
-    {
-        email: "demo@dynamic.xyz",
-        address: "FeH5oJ3QY2UGJb8PcN9xVrZ1LsKpMmWzEtRq4DvFgH7A",
-        name: "Dynamic Demo",
-        verified: true
-    },
-    {
-        email: "test@solana.com",
-        address: "9Gj5NqM8WzF7YxPvU3BsKmH2LzEtRq4DvFgH7AFeH5oJ",
-        name: "Solana Test",
-        verified: true
-    }
-];
+// Fallback mappings for development/testing when Supabase is not available
+// This will be populated dynamically as users are registered via the transfer intent system
+const FALLBACK_EMAIL_TO_ADDRESS_MAP: AddressMapping[] = [];
 
 // Check if Supabase is configured
 const isSupabaseConfigured = (): boolean => {
@@ -59,8 +29,8 @@ export class EmailResolver {
                 // Use Supabase service
                 return await EmailWalletService.getWalletByEmail(email);
             } else {
-                // Fallback to demo data with simulated delay
-                console.warn('Supabase not configured, using fallback demo data');
+                // Fallback to in-memory storage with simulated delay
+                console.warn('Supabase not configured, using fallback in-memory storage');
                 await new Promise(resolve => setTimeout(resolve, 500));
 
                 const mapping = FALLBACK_EMAIL_TO_ADDRESS_MAP.find(
@@ -105,8 +75,8 @@ export class EmailResolver {
                     verified: userInfo.verified
                 };
             } else {
-                // Fallback to demo data with simulated delay
-                console.warn('Supabase not configured, using fallback demo data');
+                // Fallback to in-memory storage with simulated delay
+                console.warn('Supabase not configured, using fallback in-memory storage');
                 await new Promise(resolve => setTimeout(resolve, 300));
 
                 return FALLBACK_EMAIL_TO_ADDRESS_MAP.find(
@@ -146,8 +116,8 @@ export class EmailResolver {
                 });
                 return true;
             } else {
-                // Fallback to demo data (in-memory only)
-                console.warn('Supabase not configured, using fallback demo data (in-memory only)');
+                // Fallback to in-memory storage (session only)
+                console.warn('Supabase not configured, using fallback in-memory storage (session only)');
                 
                 const existingIndex = FALLBACK_EMAIL_TO_ADDRESS_MAP.findIndex(
                     m => m.email.toLowerCase() === email.toLowerCase()
@@ -192,7 +162,7 @@ export class EmailResolver {
                 // Use Supabase service
                 return await EmailWalletService.isEmailRegistered(email);
             } else {
-                // Fallback to demo data
+                // Fallback to in-memory storage
                 const user = await this.getUserByEmail(email);
                 return user !== null;
             }
@@ -203,12 +173,12 @@ export class EmailResolver {
     }
 
     /**
-     * Get all registered emails (for testing/demo purposes)
-     * Note: Only works with fallback demo data, not with Supabase
+     * Get all registered emails (for development/testing purposes)
+     * Note: Only works with fallback in-memory storage, not with Supabase
      */
     static getRegisteredEmails(): string[] {
         if (isSupabaseConfigured()) {
-            console.warn('getRegisteredEmails() not supported with Supabase - use for testing only');
+            console.warn('getRegisteredEmails() not supported with Supabase - use for development only');
             return [];
         }
         
@@ -221,7 +191,7 @@ export class EmailResolver {
      * In production, you might create escrow accounts or use a different approach
      */
     static generateTemporaryAddress(email: string): string {
-        // This is a simple hash-based approach for demo purposes
+        // This is a simple hash-based approach for development purposes
         // In production, you'd want a more sophisticated system
         let hash = this.simpleHash(email);
 

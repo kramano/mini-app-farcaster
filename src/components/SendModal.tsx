@@ -135,45 +135,58 @@ const SendModal = ({ onClose, balance, usdcMintAddress, onTransactionSuccess }: 
     // Render confirmation step
     if (step === 'confirm') {
         return (
-            <div className="space-y-6">
+            <div className="fy-space-y-6">
                 {/* Hook-level error display */}
                 {error && (
-                    <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription className="text-sm">
-                            {error}
-                        </AlertDescription>
-                    </Alert>
+                    <div className="fy-alert-error">
+                        {error}
+                    </div>
                 )}
 
                 {/* Confirmation Header */}
-                <div className="text-center">
-                    <h3 className="text-lg font-semibold text-gray-900">Confirm Transaction</h3>
-                    <p className="text-sm text-gray-600 mt-1">Please review the details before sending</p>
+                <div className="fy-text-center">
+                    <h3 className="fy-label" style={{ fontSize: '18px', marginBottom: '8px' }}>Confirm Transaction</h3>
+                    <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Please review the details before sending</p>
                 </div>
 
                 {/* Recipient Information */}
-                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                    <div className="flex items-start space-x-3">
-                        <div className="bg-blue-100 rounded-full p-2">
-                            <User className="h-5 w-5 text-blue-600" />
+                <div style={{ 
+                    background: 'rgba(59, 130, 246, 0.1)', 
+                    border: '1px solid rgba(59, 130, 246, 0.2)', 
+                    borderRadius: 'var(--radius-small)', 
+                    padding: '16px',
+                    backdropFilter: 'blur(10px)'
+                }}>
+                    <div className="fy-flex" style={{ gap: '12px', alignItems: 'flex-start' }}>
+                        <div style={{ 
+                            background: 'rgba(59, 130, 246, 0.2)', 
+                            borderRadius: '50%', 
+                            padding: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <User style={{ height: '20px', width: '20px', color: '#2563eb' }} />
                         </div>
-                        <div className="flex-1">
-                            <div className="flex items-center space-x-2">
-                                <span className="font-medium text-gray-900">
-                                    {email}
-                                </span>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                                {email}
                             </div>
-                            <p className="text-sm text-gray-600">Recipient</p>
+                            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Recipient</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Transaction Details */}
-                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                    <h4 className="font-medium text-gray-900">Transaction Details</h4>
-                    <div className="space-y-2 text-sm">
-                        <div className="flex justify-between font-medium">
+                <div style={{ 
+                    background: 'var(--gradient-balance)', 
+                    border: '1px solid var(--border-light)', 
+                    borderRadius: 'var(--radius-small)', 
+                    padding: '16px'
+                }}>
+                    <h4 style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '12px' }}>Transaction Details</h4>
+                    <div style={{ fontSize: '14px' }}>
+                        <div className="fy-flex-between" style={{ fontWeight: 600 }}>
                             <span>Amount:</span>
                             <span>{amount} USDC</span>
                         </div>
@@ -181,34 +194,35 @@ const SendModal = ({ onClose, balance, usdcMintAddress, onTransactionSuccess }: 
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3 pt-4">
-                    <Button
+                <div className="fy-flex fy-gap-3" style={{ paddingTop: '16px' }}>
+                    <button
                         type="button"
-                        variant="outline"
                         onClick={handleBack}
-                        className="flex-1 h-12"
+                        className="fy-button-secondary"
+                        style={{ flex: 1, height: '48px' }}
                         disabled={isLoading}
                     >
                         Back
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                         type="button"
                         onClick={handleSubmit}
-                        className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
+                        className="fy-button-primary"
+                        style={{ flex: 1, height: '48px' }}
                         disabled={isLoading}
                     >
                         {isLoading ? (
                             <>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                <Loader2 style={{ height: '16px', width: '16px', marginRight: '8px' }} className="animate-spin" />
                                 Sending...
                             </>
                         ) : (
                             <>
-                                <DollarSign className="h-4 w-4 mr-2" />
+                                <DollarSign style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                                 Send USDC
                             </>
                         )}
-                    </Button>
+                    </button>
                 </div>
             </div>
         );
@@ -216,76 +230,104 @@ const SendModal = ({ onClose, balance, usdcMintAddress, onTransactionSuccess }: 
 
     // Render input step
     return (
-        <div className="space-y-6">
+        <div className="fy-space-y-6">
             {/* Hook-level error display */}
             {error && (
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription className="text-sm">
-                        {error}
-                    </AlertDescription>
-                </Alert>
+                <div className="fy-alert-error">
+                    {error}
+                </div>
             )}
 
             {/* Recipient Email */}
-            <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+            <div className="fy-space-y-4">
+                <label htmlFor="email" className="fy-label">
                     Send to
-                </Label>
-                <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
+                </label>
+                <div style={{ position: 'relative' }}>
+                    <Mail style={{ 
+                        position: 'absolute', 
+                        left: '12px', 
+                        top: '50%', 
+                        transform: 'translateY(-50%)', 
+                        color: 'var(--text-muted)', 
+                        height: '16px', 
+                        width: '16px' 
+                    }} />
+                    <input
                         id="email"
                         type="email"
                         placeholder="recipient@example.com"
                         value={email}
                         onChange={(e) => handleEmailChange(e.target.value)}
-                        className={`pl-10 h-12 ${errors.email ? 'border-red-500' : ''}`}
+                        className={`fy-input ${errors.email ? 'border-red-500' : ''}`}
+                        style={{ paddingLeft: '40px' }}
                         disabled={isLoading}
                     />
                 </div>
                 {errors.email && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
+                    <p className="fy-alert-error" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px' }}>
+                        <AlertCircle style={{ height: '12px', width: '12px' }} />
                         {errors.email}
                     </p>
                 )}
             </div>
 
             {/* Amount */}
-            <div className="space-y-2">
-                <Label htmlFor="amount" className="text-sm font-medium text-gray-700">
+            <div className="fy-space-y-4">
+                <label htmlFor="amount" className="fy-label">
                     Amount
-                </Label>
-                <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
+                </label>
+                <div style={{ position: 'relative' }}>
+                    <DollarSign style={{ 
+                        position: 'absolute', 
+                        left: '12px', 
+                        top: '50%', 
+                        transform: 'translateY(-50%)', 
+                        color: 'var(--text-muted)', 
+                        height: '16px', 
+                        width: '16px' 
+                    }} />
+                    <input
                         id="amount"
                         type="text"
                         placeholder="0.00"
                         value={amount}
                         onChange={(e) => handleAmountChange(e.target.value)}
-                        className={`pl-10 pr-20 h-12 ${errors.amount ? 'border-red-500' : ''}`}
+                        className={`fy-input ${errors.amount ? 'border-red-500' : ''}`}
+                        style={{ paddingLeft: '40px', paddingRight: '80px' }}
                         disabled={isLoading}
                     />
                     <button
                         type="button"
                         onClick={setMaxAmount}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded hover:bg-blue-200 transition-colors"
+                        style={{ 
+                            position: 'absolute', 
+                            right: '8px', 
+                            top: '50%', 
+                            transform: 'translateY(-50%)', 
+                            padding: '4px 8px', 
+                            background: 'rgba(59, 130, 246, 0.1)', 
+                            color: '#2563eb', 
+                            fontSize: '12px', 
+                            borderRadius: '6px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontWeight: 600
+                        }}
                         disabled={isLoading}
                     >
                         MAX
                     </button>
                 </div>
-                <div className="flex justify-between items-center text-sm text-gray-500">
+                <div className="fy-flex-between" style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
                     <span>Available: {balance} USDC</span>
                     {amount && !errors.amount && (
                         <span>≈ ${parseFloat(amount || '0').toFixed(2)}</span>
                     )}
                 </div>
                 {errors.amount && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" />
+                    <p className="fy-alert-error" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px' }}>
+                        <AlertCircle style={{ height: '12px', width: '12px' }} />
                         {errors.amount}
                     </p>
                 )}
@@ -293,46 +335,52 @@ const SendModal = ({ onClose, balance, usdcMintAddress, onTransactionSuccess }: 
 
             {/* Transaction Preview */}
             {amount && !errors.amount && (
-                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                    <h4 className="font-medium text-gray-900">Transaction Summary</h4>
-                    <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-gray-600">Amount:</span>
-                            <span className="font-medium">{amount} USDC</span>
+                <div style={{ 
+                    background: 'var(--gradient-balance)', 
+                    border: '1px solid var(--border-light)', 
+                    borderRadius: 'var(--radius-small)', 
+                    padding: '16px'
+                }}>
+                    <h4 style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Transaction Summary</h4>
+                    <div style={{ fontSize: '14px' }}>
+                        <div className="fy-flex-between">
+                            <span style={{ color: 'var(--text-secondary)' }}>Amount:</span>
+                            <span style={{ fontWeight: 600 }}>{amount} USDC</span>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-4">
-                <Button
+            <div className="fy-flex fy-gap-3" style={{ paddingTop: '16px' }}>
+                <button
                     type="button"
-                    variant="outline"
                     onClick={onClose}
-                    className="flex-1 h-12"
+                    className="fy-button-secondary"
+                    style={{ flex: 1, height: '48px' }}
                     disabled={isLoading}
                 >
                     Cancel
-                </Button>
-                <Button
+                </button>
+                <button
                     type="button"
                     onClick={handleSubmit}
-                    className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
+                    className="fy-button-primary"
+                    style={{ flex: 1, height: '48px' }}
                     disabled={isLoading || !email || !amount}
                 >
                     {isLoading ? (
                         <>
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <Loader2 style={{ height: '16px', width: '16px', marginRight: '8px' }} className="animate-spin" />
                             Sending...
                         </>
                     ) : (
                         <>
-                            <CheckCircle className="h-4 w-4 mr-2" />
+                            <CheckCircle style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                             Continue
                         </>
                     )}
-                </Button>
+                </button>
             </div>
         </div>
     );

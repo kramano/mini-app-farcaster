@@ -12,20 +12,52 @@ const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-50 fy-flex-center" style={{ padding: '16px' }}>
+      {/* Glassmorphic Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="fy-modal-backdrop"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(8px)'
+        }}
         onClick={onClose}
       />
       
-      {/* Modal Content */}
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 animate-scale-in">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+      {/* Glassmorphic Modal Content */}
+      <div className="fy-modal-container fy-modal-enter">
+        <div className="fy-flex-between fy-mb-6">
+          <h2 style={{ 
+            fontSize: '20px', 
+            fontWeight: 700, 
+            color: 'var(--text-primary)',
+            margin: 0
+          }}>
+            {title}
+          </h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(148, 163, 184, 0.1)',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: 'var(--text-secondary)',
+              fontSize: '14px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(148, 163, 184, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(148, 163, 184, 0.1)';
+            }}
           >
             ✕
           </button>
