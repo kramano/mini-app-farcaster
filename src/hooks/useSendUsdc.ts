@@ -6,7 +6,7 @@ import {isSolanaWallet} from '@dynamic-labs/solana';
 import {useToast} from '@/hooks/use-toast';
 import EmailResolver from '@/services/emailResolver';
 import GaslessTransactionService from '@/services/gaslessTransactionService';
-import TransferIntentService from '@/services/transferIntentService';
+import TransferIntentService from '@/services/transferService';
 
 export interface UseSendUsdcOptions {
     usdcMintAddress?: string;

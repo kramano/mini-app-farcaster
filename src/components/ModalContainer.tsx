@@ -5,6 +5,7 @@ import ReceiveModal from './ReceiveModal';
 import EarnModal from './EarnModal';
 import SettingsModal from './SettingsModal';
 import { ModalType } from '@/hooks/useModalState';
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 interface ModalContainerProps {
     activeModal: ModalType;
@@ -25,6 +26,10 @@ const ModalContainer = ({
                             usdcMintAddress,
                             onTransactionSuccess
                         }: ModalContainerProps) => {
+    const { user, primaryWallet } = useDynamicContext();
+    
+    const userEmail = user?.email || '';
+    const walletAddress = primaryWallet?.address || '';
 
     return (
         <>
@@ -39,8 +44,12 @@ const ModalContainer = ({
             </Modal>
 
             {/* Receive Modal */}
-            <Modal isOpen={activeModal === "receive"} onClose={onClose} title="Receive USDC">
-                <ReceiveModal onClose={onClose} />
+            <Modal isOpen={activeModal === "receive"} onClose={onClose} title="Receive">
+                <ReceiveModal 
+                    onClose={onClose} 
+                    userEmail={userEmail}
+                    walletAddress={walletAddress}
+                />
             </Modal>
 
             {/* Earn Modal */}

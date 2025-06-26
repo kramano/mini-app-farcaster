@@ -1,7 +1,7 @@
-// src/services/transferIntentService.ts
+// src/services/transferService.ts
 
 import { supabase } from '@/lib/supabase';
-import EmailInvitationService from './emailInvitationService';
+import EmailNotificationService from './emailNotificationService';
 import { ENV_CONFIG } from '@/config/environment';
 
 export interface TransferIntent {
@@ -20,6 +20,18 @@ export interface CreateTransferIntentParams {
     senderEmail?: string; // Optional sender email
     recipientEmail: string;
     amount: number; // Amount in USDC base units (6 decimals)
+}
+
+export interface UnclaimedTransfer {
+    id: string;
+    amount: string;
+    fromEmail: string;
+    fromName?: string;
+    message?: string;
+    timestamp: Date;
+    status: 'pending' | 'claimed' | 'cancelled';
+    tokenSymbol: string;
+    senderWallet: string;
 }
 
 export class TransferIntentService {
@@ -77,9 +89,9 @@ export class TransferIntentService {
 
             // Send invitation email automatically
             try {
-                if (EmailInvitationService.isConfigured()) {
+                if (EmailNotificationService.isConfigured()) {
                     console.log('📧 Sending invitation email...');
-                    const emailResult = await EmailInvitationService.sendInvitationEmail({
+                    const emailResult = await EmailNotificationService.sendInvitationEmail({
                         transferIntentId: data.id,
                         senderEmail: senderEmail || `${data.sender_wallet.slice(0, 6)}...${data.sender_wallet.slice(-4)}`,
                         recipientEmail: data.recipient_email,
@@ -217,6 +229,67 @@ export class TransferIntentService {
             console.error('❌ Failed to get transfer intent:', error);
             return null;
         }
+    }
+
+    /**
+     * Get unclaimed transfers by email for receive modal
+     */
+    static async getUnclaimedTransfersByEmail(email: string): Promise<{
+        transfers: UnclaimedTransfer[];
+        totalAmount: number;
+    }> {
+        try {
+            const { data, error } = await supabase
+                .from('transfer_intents')
+                .select('*')
+                .eq('recipient_email', email.toLowerCase())
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false })
+                .limit(5); // Maximum 5 as per requirements
+
+            if (error) {
+                console.error('❌ Supabase error getting unclaimed transfers:', error);
+                return { transfers: [], totalAmount: 0 };
+            }
+
+            const transfers: UnclaimedTransfer[] = data.map(item => ({
+                id: item.id,
+                amount: (item.amount).toFixed(2), // Convert to display format
+                fromEmail: item.sender_wallet, // Use wallet as sender identifier for now
+                fromName: undefined,
+                message: item.message || undefined,
+                timestamp: new Date(item.created_at),
+                status: item.status as 'pending' | 'claimed' | 'cancelled',
+                tokenSymbol: item.token_symbol || 'USDC',
+                senderWallet: item.sender_wallet
+            }));
+
+            const totalAmount = transfers.reduce((sum, transfer) => 
+                sum + parseFloat(transfer.amount), 0
+            );
+
+            return { transfers, totalAmount };
+        } catch (error) {
+            console.error('❌ Failed to get unclaimed transfers by email:', error);
+            return { transfers: [], totalAmount: 0 };
+        }
+    }
+
+    /**
+     * Claim transfer (non-functional for now)
+     */
+    static async claimTransfer(transferId: string, walletAddress: string): Promise<{
+        success: boolean;
+        txHash?: string;
+        error?: string;
+    }> {
+        // NON-FUNCTIONAL FOR NOW - just return success: false
+        console.log('🚧 Claim transfer called but not yet implemented:', { transferId, walletAddress });
+        
+        return { 
+            success: false, 
+            error: "Claiming not yet implemented" 
+        };
     }
 }
 

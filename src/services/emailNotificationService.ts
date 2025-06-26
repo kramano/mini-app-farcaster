@@ -1,4 +1,4 @@
-// src/services/emailInvitationService.ts
+// src/services/emailNotificationService.ts
 
 import { supabase } from '@/lib/supabase';
 
@@ -16,7 +16,22 @@ export interface EmailInvitationResult {
     error?: string;
 }
 
-export class EmailInvitationService {
+export interface PaymentRequestData {
+    fromEmail: string;
+    fromName?: string;
+    toEmail: string;
+    amount: string;
+    message?: string;
+    walletAddress: string;
+}
+
+export interface PaymentRequestResult {
+    success: boolean;
+    requestId?: string;
+    error?: string;
+}
+
+export class EmailNotificationService {
     /**
      * Send invitation email for a transfer intent via Supabase function
      */
@@ -132,6 +147,101 @@ export class EmailInvitationService {
         }
     }
     /**
+     * Send payment request email
+     */
+    static async sendPaymentRequest(data: PaymentRequestData): Promise<PaymentRequestResult> {
+        const { fromEmail, fromName, toEmail, amount, message, walletAddress } = data;
+
+        console.log('📧 Sending payment request email from:', fromEmail, 'to:', toEmail);
+
+        try {
+            // First, save payment request to database
+            const { data: requestData, error: dbError } = await supabase
+                .from('payment_requests')
+                .insert({
+                    requester_email: fromEmail,
+                    requester_wallet: walletAddress,
+                    target_email: toEmail,
+                    amount: parseFloat(amount),
+                    message: message || null,
+                    status: 'sent'
+                })
+                .select()
+                .single();
+
+            if (dbError) {
+                console.error('❌ Failed to save payment request:', dbError);
+                return {
+                    success: false,
+                    error: 'Failed to save payment request'
+                };
+            }
+
+            // Get application URL from environment variable
+            const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+            
+            // Create payment URL - user can send money to the requester's email
+            const paymentUrl = `${appUrl}?send_to=${encodeURIComponent(fromEmail)}&amount=${amount}`;
+
+            // Call Supabase function to send payment request email
+            const { data: emailData, error: emailError } = await supabase.functions.invoke('resend-email', {
+                body: {
+                    to: toEmail,
+                    subject: `Payment request for $${amount} USDC from ${fromName || fromEmail}`,
+                    appUrl,
+                    templateData: {
+                        type: 'payment_request',
+                        requesterEmail: fromEmail,
+                        requesterName: fromName || fromEmail,
+                        targetEmail: toEmail,
+                        amount: amount,
+                        message: message || 'No message',
+                        paymentUrl: paymentUrl,
+                        currentDate: new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit'
+                        })
+                    }
+                }
+            });
+
+            if (emailError) {
+                console.error('❌ Failed to send payment request email:', emailError);
+                
+                // Update payment request status to failed
+                await supabase
+                    .from('payment_requests')
+                    .update({ status: 'failed' })
+                    .eq('id', requestData.id);
+
+                return {
+                    success: false,
+                    error: emailError.message
+                };
+            }
+
+            console.log('✅ Payment request email sent successfully:', emailData?.emailId);
+
+            return {
+                success: true,
+                requestId: requestData.id
+            };
+
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            console.error('❌ Failed to send payment request:', error);
+
+            return {
+                success: false,
+                error: errorMessage
+            };
+        }
+    }
+
+    /**
      * Check if email service is properly configured
      */
     static isConfigured(): boolean {
@@ -139,4 +249,4 @@ export class EmailInvitationService {
     }
 }
 
-export default EmailInvitationService;
+export default EmailNotificationService;

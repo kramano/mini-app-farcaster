@@ -9,7 +9,7 @@ interface SettingsModalProps {
 }
 
 const SettingsModal = ({ onClose }: SettingsModalProps) => {
-  const { primaryWallet, setShowAuthFlow, user, handleLogOut } = useDynamicContext();
+  const { primaryWallet, user, handleLogOut } = useDynamicContext();
   const { deleteUser, error: dynamicDeleteError, isLoading: isDynamicDeleting } = useDeleteUserAccount();
   const [activeSection, setActiveSection] = useState('profile');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -49,15 +49,6 @@ const SettingsModal = ({ onClose }: SettingsModalProps) => {
       
     } catch (error) {
       console.error('Logout failed:', error);
-      
-      // Fallback: try to disconnect wallet manually and refresh
-      try {
-        if (primaryWallet?.connector?.disconnect) {
-          await primaryWallet.connector.disconnect();
-        }
-      } catch (disconnectError) {
-        console.error('Manual disconnect failed:', disconnectError);
-      }
       
       // Force refresh as last resort
       window.location.reload();
