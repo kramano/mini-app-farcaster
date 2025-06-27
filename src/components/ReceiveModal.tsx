@@ -130,12 +130,35 @@ const ReceiveModal = ({ onClose, userEmail, walletAddress }: ReceiveModalProps) 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
+    
+    // Debug logging for timezone issues
+    if (diffMs < 0) {
+      console.log('Future timestamp detected:', {
+        transferTime: date.toISOString(),
+        currentTime: now.toISOString(),
+        diffMs: diffMs,
+        diffMins: Math.floor(diffMs / (1000 * 60))
+      });
+    }
+    
+    // Handle invalid dates or future dates (within 5 minutes tolerance for clock skew)
+    if (isNaN(date.getTime()) || diffMs < -300000) { // -5 minutes tolerance
+      return 'just now';
+    }
+    
+    // If it's slightly in the future (clock skew), treat as "just now"
+    if (diffMs < 0) {
+      return 'just now';
+    }
+    
     const diffMins = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     
+    if (diffMins < 1) return 'just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
-    return `${Math.floor(diffHours / 24)}d ago`;
+    return `${diffDays}d ago`;
   };
 
   const hasUnclaimedTransfers = unclaimedTransfers.length > 0;

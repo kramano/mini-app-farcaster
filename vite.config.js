@@ -21,8 +21,13 @@ export default defineConfig({
         },
     },
     server: {
-        host: "::", // optional, allows LAN access
-        port: 5173, // use 5173 unless you specifically want 8080
-        allowedHosts: ["utah-kits-adaptor-lee.trycloudflare.com", "localhost"],
+        host: '0.0.0.0',
+        port: 5173,
+        allowedHosts: true,
+    },
+    preview: {
+        host: '0.0.0.0',
+        port: 4173,
+        allowedHosts: ['wallet.fymoney.xyz'],
     },
 });

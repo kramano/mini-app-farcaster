@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useDynamicContext, useDeleteUserAccount } from "@dynamic-labs/sdk-react-core";
 import { Separator } from "@/components/ui/separator";
 import { User, Trash2, LogOut, Copy, Check, Loader2 } from "lucide-react";

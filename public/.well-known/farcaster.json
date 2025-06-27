@@ -1,18 +1,15 @@
 {
   "frame": {
     "version": "1",
-    "name": "Dynamic Mini App",
-    "iconUrl": "https://utah-kits-adaptor-lee.trycloudflare.com/image-light.png",
-    "homeUrl": "https://utah-kits-adaptor-lee.trycloudflare.com",
-    "splashImageUrl": "https://utah-kits-adaptor-lee.trycloudflare.com/image-light.png",
-    "splashBackgroundColor": "#000000",
-    "subtitle": "Connect with Dynamic",
-    "description": "A mini app that demonstrates wallet connections and transactions with Dynamic and Wagmi",
+    "name": "FY Money",
+    "homeUrl": "https://wallet.fymoney.xyz",
+    "splashBackgroundColor": "#667eea",
+    "subtitle": "Your USDC Yield Wallet",
+    "description": "Send USDC by email, earn APY, and manage your digital dollars with ease. Built on Solana for fast, low-cost transactions.",
     "primaryCategory": "finance",
-    "tags": ["wallet", "connect", "ethereum", "dynamic"],
-    "ogTitle": "Dynamic Mini App",
-    "ogDescription": "Connect wallets and perform transactions with Dynamic",
-    "ogImageUrl": "https://utah-kits-adaptor-lee.trycloudflare.com/logo-light.png",
-    "tagline": "Easy wallet connections & transactions"
+    "tags": ["usdc", "yield", "earnings", "stablecoin", "solana", "defi"],
+    "ogTitle": "FY Money - Your USDC Yield Wallet",
+    "ogDescription": "Send USDC by email, earn APY, and manage your digital dollars with ease",
+    "tagline": "Send, earn, and grow your USDC"
   }
 }

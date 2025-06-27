@@ -252,17 +252,51 @@ export class TransferIntentService {
                 return { transfers: [], totalAmount: 0 };
             }
 
-            const transfers: UnclaimedTransfer[] = data.map(item => ({
-                id: item.id,
-                amount: (item.amount).toFixed(2), // Convert to display format
-                fromEmail: item.sender_wallet, // Use wallet as sender identifier for now
-                fromName: undefined,
-                message: item.message || undefined,
-                timestamp: new Date(item.created_at),
-                status: item.status as 'pending' | 'claimed' | 'cancelled',
-                tokenSymbol: item.token_symbol || 'USDC',
-                senderWallet: item.sender_wallet
-            }));
+            const transfers: UnclaimedTransfer[] = data.map(item => {
+                // Handle timezone-aware timestamp parsing
+                let validTimestamp = new Date();
+                
+                if (item.created_at) {
+                    // If the timestamp doesn't have timezone info, assume it's UTC
+                    const timestampStr = item.created_at.includes('Z') || item.created_at.includes('+') 
+                        ? item.created_at 
+                        : item.created_at + 'Z'; // Add UTC indicator
+                    
+                    const parsedTimestamp = new Date(timestampStr);
+                    
+                    // Debug logging (only for first few items to avoid spam)
+                    if (data.indexOf(item) < 2) {
+                        console.log('Parsing timestamp:', {
+                            original: item.created_at,
+                            withTZ: timestampStr,
+                            parsed: parsedTimestamp.toISOString(),
+                            now: new Date().toISOString(),
+                            localTime: parsedTimestamp.toLocaleString(),
+                            nowLocal: new Date().toLocaleString(),
+                            isValid: !isNaN(parsedTimestamp.getTime()),
+                            diffMs: new Date().getTime() - parsedTimestamp.getTime()
+                        });
+                    }
+                    
+                    if (!isNaN(parsedTimestamp.getTime())) {
+                        validTimestamp = parsedTimestamp;
+                    } else {
+                        console.warn('Invalid timestamp from database:', item.created_at, 'for transfer:', item.id);
+                    }
+                }
+                
+                return {
+                    id: item.id,
+                    amount: (item.amount).toFixed(2), // Convert to display format
+                    fromEmail: item.sender_wallet, // Use wallet as sender identifier for now
+                    fromName: undefined,
+                    message: item.message || undefined,
+                    timestamp: validTimestamp,
+                    status: item.status as 'pending' | 'claimed' | 'cancelled',
+                    tokenSymbol: item.token_symbol || 'USDC',
+                    senderWallet: item.sender_wallet
+                };
+            });
 
             const totalAmount = transfers.reduce((sum, transfer) => 
                 sum + parseFloat(transfer.amount), 0
